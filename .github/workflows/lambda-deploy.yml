@@ -36,23 +36,23 @@ jobs:
 
       - name: Deploy Lambda Function
         uses: jfarcas/lambda-deploy-action/.github/actions/lambda-deploy@main
-        env:
-          # Repository Variables (required)
-          S3_BUCKET_NAME: ${{ vars.S3_BUCKET_NAME }}
-          LAMBDA_FUNCTION_NAME: ${{ vars.LAMBDA_FUNCTION_NAME }}
-          AWS_REGION: ${{ vars.AWS_REGION || 'eu-west-1' }}
-          
-          # AWS Credentials for Access Key authentication
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          # AWS Credentials for OIDC authentication
-          AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
-          # Optional: Teams webhook for notifications
-          TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
         with:
           config-file: 'lambda-deploy-config.yml'
           environment: ${{ inputs.environment || 'auto' }}
           force-deploy: ${{ inputs.force_deploy || 'false' }}
+          
+          # Repository Variables
+          s3-bucket-name: ${{ vars.S3_BUCKET_NAME }}
+          lambda-function-name: ${{ vars.LAMBDA_FUNCTION_NAME }}
+          aws-region: ${{ vars.AWS_REGION || 'eu-west-1' }}
+          
+          # AWS Credentials
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-role-arn: ${{ secrets.AWS_ROLE_ARN }}
+          
+          # Optional notifications
+          teams-webhook-url: ${{ secrets.TEAMS_WEBHOOK_URL }}
 
       - name: Test deployment
         if: success()
