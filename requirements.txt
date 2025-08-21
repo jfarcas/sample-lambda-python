@@ -1,0 +1,2 @@
+# No external dependencies for this simple hello world function
+# This file is kept for demonstration purposes and future dependency additions

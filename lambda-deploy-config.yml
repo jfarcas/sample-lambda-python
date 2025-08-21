@@ -1,0 +1,72 @@
+project:
+  name: "lambda-test-python"
+  description: "Simple Python Lambda function for testing the deploy action"
+  runtime: "python"
+  
+  # Optional: Specify runtime versions
+  versions:
+    python: "3.9"
+
+build:
+  # Commands (use "auto" for automatic detection)
+  commands:
+    install: "pip install -r requirements.txt"
+    lint: "auto"  # Will use flake8 if available
+    test: "python -m unittest test_lambda.py -v"
+    build: "auto"  # Will create zip automatically
+  
+  # Quality gates
+  lint_required: false    # Optional for this simple example
+  tests_required: true    # Ensure tests pass before deployment
+  
+  # Artifact configuration
+  artifact:
+    path: "lambda-deployment.zip"
+    exclude_patterns:
+      - "*.md"
+      - "test_*.py"
+      - "__pycache__/"
+      - "*.pyc"
+      - ".pytest_cache/"
+
+# Deployment configuration
+deployment:
+  # Optional health check
+  health_check:
+    test_payload: '{"name": "Test"}'
+
+environments:
+  dev:
+    trigger_branches: 
+      - "main"
+      - "feature/**"
+    aws:
+      region: "eu-west-1"
+      auth_type: "access_key"
+    deployment:
+      versioning: false
+      run_tests: true
+      notifications: false
+  pre:
+    trigger_branches:
+      - "main"
+      - "feature/**"
+    aws:
+      auth_type: "access_key"
+    deployment:
+      versioning: false
+      run_tests: true
+      notifications: false
+  
+  prod:
+    aws:
+      region: "eu-west-1"
+      auth_type: "oidc"
+    deployment:
+      versioning: true
+      run_tests: true
+      notifications: true
+      require_manual_approval: true
+    notifications:
+      teams:
+        webhook_secret: "TEAMS_WEBHOOK_URL"
