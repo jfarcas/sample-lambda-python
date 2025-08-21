@@ -37,6 +37,11 @@ jobs:
       - name: Deploy Lambda Function
         uses: jfarcas/lambda-deploy-action/.github/actions/lambda-deploy@main
         env:
+          # Repository Variables (required)
+          S3_BUCKET_NAME: ${{ vars.S3_BUCKET_NAME }}
+          LAMBDA_FUNCTION_NAME: ${{ vars.LAMBDA_FUNCTION_NAME }}
+          AWS_REGION: ${{ vars.AWS_REGION || 'eu-west-1' }}
+          
           # AWS Credentials for Access Key authentication
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
