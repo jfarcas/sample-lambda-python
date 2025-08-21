@@ -2,7 +2,7 @@ name: Deploy Python Lambda
 
 on:
   push:
-    branches: 
+    branches:
       - main
       - 'feature/**'
   workflow_dispatch:
@@ -13,9 +13,9 @@ on:
         default: 'dev'
         type: choice
         options:
-        - dev
-        - pre
-        - prod
+          - dev
+          - pre
+          - prod
       force_deploy:
         description: 'Force deployment'
         required: false
@@ -29,34 +29,21 @@ permissions:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Deploy Lambda Function
-        uses:  jfarcas/lambda-deploy-action/.github/actions/lambda-deploy@main
+        uses: jfarcas/lambda-deploy-action/.github/actions/lambda-deploy@main
         with:
-          aws-region: ${{ vars.AWS_REGION || 'eu-west-1' }}
-          s3-bucket: ${{ vars.S3_BUCKET_NAME }}
-          lambda-function-name: ${{ vars.LAMBDA_FUNCTION_NAME || 'lambda-test-python' }}
-          environment: ${{ inputs.environment || 'dev' }}
           config-file: 'lambda-deploy-config.yml'
+          environment: ${{ inputs.environment || 'auto' }}
           force-deploy: ${{ inputs.force_deploy || 'false' }}
-          
-          # AWS Authentication - Development (Access Keys)
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          
-          # AWS Authentication - Production (OIDC) - uncomment when using OIDC
-          # aws-role-arn: ${{ secrets.AWS_ROLE_ARN }}
-          
-          # Optional notifications
-          teams-webhook-url: ${{ secrets.TEAMS_WEBHOOK_URL }}
 
       - name: Test deployment
         if: success()
         run: |
-          echo "✅ Python Lambda deployment completed successfully"
-          echo "🐍 Runtime: Python 3.9"
+          echo "✅ Python Lambda deployment completed successfully"                                                                                                                                                           
+          echo "🐍 Runtime: Python 3.9"                                                                                                                                                                                      
           echo "📦 Function: lambda-test-python"
