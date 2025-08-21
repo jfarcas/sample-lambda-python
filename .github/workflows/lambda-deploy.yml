@@ -35,7 +35,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Deploy Lambda Function
-        uses: https://github.com/jfarcas/lambda-deploy-action@main
+        uses: jfarcas/lambda-deploy-action@main
         with:
           aws-region: ${{ vars.AWS_REGION || 'eu-west-1' }}
           s3-bucket: ${{ vars.S3_BUCKET_NAME }}
