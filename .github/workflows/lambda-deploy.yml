@@ -36,6 +36,14 @@ jobs:
 
       - name: Deploy Lambda Function
         uses: jfarcas/lambda-deploy-action/.github/actions/lambda-deploy@main
+        env:
+          # AWS Credentials for Access Key authentication
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          # AWS Credentials for OIDC authentication
+          AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
+          # Optional: Teams webhook for notifications
+          TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
         with:
           config-file: 'lambda-deploy-config.yml'
           environment: ${{ inputs.environment || 'auto' }}
