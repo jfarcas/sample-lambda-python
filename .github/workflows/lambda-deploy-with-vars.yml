@@ -1,18 +1,16 @@
-name: Deploy Lambda Function
+name: Deploy Lambda Function (Using Repository Variables)
 
 # Dynamic run name showing deployment details
 run-name: >-
   ${{
     github.event_name == 'workflow_dispatch' && 
-    format('🚀 Manual Deploy | {0} → {1} | v{2}', 
+    format('🚀 Manual Deploy | {0} → {1}', 
       github.actor,
-      github.ref_name,
-      '1.0.1'
+      inputs.environment
     ) ||
     github.event_name == 'push' &&
-    format('📦 Auto Deploy | {0} | {1}',
-      github.ref_name,
-      github.event.head_commit.message
+    format('📦 Auto Deploy | {0}',
+      github.ref_name
     ) ||
     format('🔄 Lambda Deploy | {0}',
       github.ref_name
@@ -63,8 +61,29 @@ jobs:
           force-deploy: ${{ inputs.force-deploy || false }}
           version: ${{ inputs.version || '' }}
         env:
+          # Secrets (stored in repository secrets)
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          S3_BUCKET_NAME: "lambda-deploy-action"
-          LAMBDA_FUNCTION_NAME: "lambda-deploy-python"
-          AWS_REGION: "eu-west-1"
+          
+          # Repository Variables (if configured in repository settings)
+          # Go to: Repository Settings → Secrets and variables → Actions → Variables tab
+          S3_BUCKET_NAME: ${{ vars.S3_BUCKET_NAME }}
+          LAMBDA_FUNCTION_NAME: ${{ vars.LAMBDA_FUNCTION_NAME }}
+          AWS_REGION: ${{ vars.AWS_REGION }}
+          
+          # Alternative: Hardcoded values (not recommended for production)
+          # S3_BUCKET_NAME: "lambda-deploy-action"
+          # LAMBDA_FUNCTION_NAME: "lambda-deploy-python"
+          # AWS_REGION: "eu-west-1"
+
+# NOTE: To use repository variables (${{ vars.VARIABLE_NAME }}):
+# 1. Go to your repository on GitHub
+# 2. Click Settings → Secrets and variables → Actions
+# 3. Click the "Variables" tab
+# 4. Add these variables:
+#    - S3_BUCKET_NAME: lambda-deploy-action
+#    - LAMBDA_FUNCTION_NAME: lambda-deploy-python
+#    - AWS_REGION: eu-west-1
+#
+# If you don't want to set up repository variables, use the hardcoded approach
+# shown in lambda-deploy.yml
