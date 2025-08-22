@@ -16,7 +16,7 @@ build:
     build: "auto"  # Will create zip automatically
   
   # Quality gates
-  lint_required: true    # Optional for this simple example
+  lint_required: false    # Optional for this simple example
   tests_required: true    # Ensure tests pass before deployment
   
   # Artifact configuration
