@@ -33,8 +33,8 @@ build:
 deployment:
   # Optional health check
   health_check:
-    # Disable health check temporarily to avoid JSON parsing issues
-    enabled: false
+    # Enable health check to test the base64 encoding fix
+    enabled: true
     
     # Simple JSON payload - avoid quotes within quotes
     test_payload: '{"name":"Test","source":"deployment"}'
