@@ -9,10 +9,10 @@ project:
 
 build:
   commands:
-    install: "auto"  # pip install -r requirements.txt
-    test: "auto"     # python -m pytest (if tests exist)
+    install: "pip install -r requirements.txt"
+    # lint: "flake8 ."                    # Optional: Specify lint command or leave empty to skip
+    # test: "python -m pytest tests/"    # Optional: Specify test command or leave empty to skip
     build: "auto"    # automatic packaging
-  tests_required: false
   
   # Artifact configuration
   artifact:
