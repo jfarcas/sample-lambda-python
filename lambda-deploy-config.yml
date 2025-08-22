@@ -1,4 +1,5 @@
 # Lambda deployment configuration for lambda-test-python
+# Version managed in pyproject.toml (modern Python standard)
 
 project:
   name: "lambda-test-python"
@@ -23,6 +24,7 @@ build:
       - "__pycache__/"
       - "*.pyc"
       - ".pytest_cache/"
+      - "pyproject.toml"  # Exclude from deployment package
 
 environments:
   dev:
@@ -63,3 +65,11 @@ deployment:
     #   max_attempts: 1
     #   validate_rollback: true
     #   fail_on_rollback_failure: true
+
+# NOTE: Version is now managed in pyproject.toml
+# The action will automatically detect and use the version from:
+# [project]
+# version = "1.0.0"
+
+# For advanced usage with development dependencies, see:
+# lambda-deploy-config-with-pyproject.yml

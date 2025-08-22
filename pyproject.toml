@@ -5,9 +5,9 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "lambda-test-python"
 version = "1.0.0"
-description = "Sample Python Lambda function for testing deployment"
+description = "Simple Python Lambda function for testing deployment workflows"
 authors = [
-    {name = "Your Name", email = "your.email@example.com"}
+    {name = "DevOps Team", email = "devops@company.com"}
 ]
 readme = "README.md"
 license = {text = "MIT"}
@@ -18,31 +18,151 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: System :: Systems Administration",
 ]
+keywords = ["lambda", "aws", "serverless", "deployment"]
 
-# Dependencies (replaces requirements.txt)
+# Runtime dependencies (none for this simple example)
 dependencies = [
-    # Add your dependencies here
+    # Add your runtime dependencies here
     # "requests>=2.28.0",
     # "boto3>=1.26.0",
+    # "pydantic>=1.10.0",
 ]
 
+# Development dependencies
 [project.optional-dependencies]
 dev = [
+    # Linting tools
+    "flake8>=5.0.0",
+    "black>=22.0.0",
+    "isort>=5.0.0",
+    
+    # Testing tools
     "pytest>=7.0.0",
     "pytest-cov>=4.0.0",
-    "black>=22.0.0",
-    "flake8>=5.0.0",
+    "pytest-mock>=3.10.0",
+    
+    # Type checking
+    "mypy>=1.0.0",
+    
+    # Security
+    "bandit>=1.7.0",
+    
+    # Documentation
+    "sphinx>=5.0.0",
 ]
 
+lint = [
+    "flake8>=5.0.0",
+    "black>=22.0.0",
+    "isort>=5.0.0",
+    "mypy>=1.0.0",
+]
+
+test = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "pytest-mock>=3.10.0",
+]
+
+# Project URLs
+[project.urls]
+Homepage = "https://github.com/YourOrg/lambda-test-python"
+Repository = "https://github.com/YourOrg/lambda-test-python"
+Issues = "https://github.com/YourOrg/lambda-test-python/issues"
+Documentation = "https://github.com/YourOrg/lambda-test-python/blob/main/README.md"
+
+# Package discovery
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["lambda_function*"]
+exclude = ["tests*", "docs*"]
 
+# Black configuration
 [tool.black]
 line-length = 88
 target-version = ['py39']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+)/
+'''
 
+# isort configuration
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 88
+known_first_party = ["lambda_function"]
+
+# pytest configuration
 [tool.pytest.ini_options]
 testpaths = ["tests", "."]
 python_files = ["test_*.py", "*_test.py"]
+python_functions = ["test_*"]
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "--verbose",
+    "--cov=lambda_function",
+    "--cov-report=term-missing",
+    "--cov-report=html",
+    "--cov-report=xml",
+]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "unit: marks tests as unit tests",
+]
+
+# mypy configuration
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+
+# Coverage configuration
+[tool.coverage.run]
+source = ["lambda_function"]
+omit = [
+    "*/tests/*",
+    "*/test_*",
+    "*/__pycache__/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]
