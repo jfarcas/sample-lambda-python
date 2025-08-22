@@ -33,7 +33,15 @@ build:
 deployment:
   # Optional health check
   health_check:
-    test_payload: '{"name": "Test"}'
+    # Simple JSON payload - avoid quotes within quotes
+    test_payload: '{"name":"Test","source":"deployment"}'
+    
+    # Alternative: YAML object format (cleaner approach)
+    test_payload_object:
+      name: "Test"
+      source: "GitHub Actions"
+      timestamp: "2025-08-22"
+    
     # Optional: Expected response validation (not implemented yet)
     # expected_status_code: 200
     # expected_response_contains: "Hello, Test!"
