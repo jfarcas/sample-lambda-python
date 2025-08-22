@@ -31,7 +31,7 @@ This repository serves as a **consumer example** to demonstrate how to use the L
 - **[pyproject.toml](pyproject.toml)** - Project configuration with version
 
 ### Configuration
-- **[lambda-deploy-config.yml](lambda-deploy-config.yml)** - Lambda Deploy Action configuration
+- **[.github/config/lambda-deploy-config.yml](.github/config/lambda-deploy-config.yml)** - Lambda Deploy Action configuration
 - **[version.txt](version.txt)** - Version file for deployment tracking
 
 ### Workflows
@@ -41,6 +41,31 @@ This repository serves as a **consumer example** to demonstrate how to use the L
 ### Documentation
 - **[USAGE_EXAMPLES.md](USAGE_EXAMPLES.md)** - Detailed usage guide and comparison
 - **[ENVIRONMENT_VARIABLES_SETUP.md](ENVIRONMENT_VARIABLES_SETUP.md)** - Setup guide
+
+## 📁 Project Organization
+
+### Clean Structure
+```
+lambda-test-python/
+├── .github/
+│   ├── config/
+│   │   └── lambda-deploy-config.yml      # ✅ CI/CD configuration
+│   └── workflows/
+│       ├── lambda-deploy.yml             # Direct action usage
+│       └── lambda-deploy-reusable.yml    # Reusable workflow usage
+├── lambda_function.py                    # Lambda function code
+├── requirements.txt                      # Python dependencies
+├── pyproject.toml                        # Project configuration
+├── version.txt                           # Version tracking
+├── USAGE_EXAMPLES.md                     # Usage guide
+└── README.md                             # This file
+```
+
+**Benefits:**
+- ✅ Clean root directory
+- ✅ CI/CD configurations grouped together
+- ✅ Easy to navigate and maintain
+- ✅ Follows GitHub Actions conventions
 
 ## 🔧 Configuration Highlights
 
@@ -90,7 +115,7 @@ deployment:
     LAMBDA_FUNCTION_NAME: ${{ vars.LAMBDA_FUNCTION_NAME }}
     AWS_REGION: ${{ vars.AWS_REGION }}
   with:
-    config-file: 'lambda-deploy-config.yml'
+    config-file: '.github/config/lambda-deploy-config.yml'
     environment: ${{ inputs.environment }}
 ```
 
@@ -98,9 +123,9 @@ deployment:
 ```yaml
 jobs:
   deploy:
-    uses: jfarcas/lambda-deploy-action/actions/lambda-deploy/workflows/workflow.yml@main
+    uses: jfarcas/lambda-deploy-action/.github/workflows/lambda-deploy-reusable.yml@main
     with:
-      config-file: 'lambda-deploy-config.yml'
+      config-file: '.github/config/lambda-deploy-config.yml'
       environment: ${{ inputs.environment }}
     secrets:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -154,13 +179,18 @@ Both patterns demonstrate dynamic workflow names that provide rich context:
    - **Direct Action** for custom workflows
    - **Reusable Workflow** for standard deployments
 
-2. **Copy the relevant workflow** from this repository
+2. **Choose your config organization**:
+   - **`.github/config/`** for organized projects (recommended)
+   - **Root directory** for simple projects
+   - **Custom directory** for specific needs
 
-3. **Adapt the configuration** for your specific requirements
+3. **Copy the relevant workflow** from this repository
 
-4. **Set up your secrets and variables**
+4. **Adapt the configuration** for your specific requirements
 
-5. **Test in your dev environment**
+5. **Set up your secrets and variables**
+
+6. **Test in your dev environment**
 
 ## 🤝 Contributing
 

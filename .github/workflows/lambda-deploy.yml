@@ -89,7 +89,7 @@ jobs:
           # Optional: Teams webhook for notifications
           TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
         with:
-          config-file: 'lambda-deploy-config.yml'
+          config-file: '.github/config/lambda-deploy-config.yml'
           environment: ${{ inputs.environment || 'auto' }}
           force-deploy: ${{ inputs.force_deploy || 'false' }}
           rollback-to-version: ${{ inputs.rollback_version }}
@@ -102,6 +102,7 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "- **Method:** Direct Action Usage" >> $GITHUB_STEP_SUMMARY
           echo "- **Action:** \`jfarcas/lambda-deploy-action/actions/lambda-deploy@main\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Config:** \`.github/config/lambda-deploy-config.yml\`" >> $GITHUB_STEP_SUMMARY
           echo "- **Environment:** ${{ inputs.environment || 'auto' }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY

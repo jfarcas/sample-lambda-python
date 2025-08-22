@@ -23,7 +23,7 @@ Uses the action directly in the workflow for maximum flexibility and control.
     AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
     AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
   with:
-    config-file: 'lambda-deploy-config.yml'
+    config-file: '.github/config/lambda-deploy-config.yml'
     environment: ${{ inputs.environment || 'auto' }}
 ```
 
@@ -43,7 +43,7 @@ jobs:
   deploy:
     uses: jfarcas/lambda-deploy-action/.github/workflows/lambda-deploy-reusable.yml@main
     with:
-      config-file: 'lambda-deploy-config.yml'
+      config-file: '.github/config/lambda-deploy-config.yml'
       environment: ${{ inputs.environment || 'auto' }}
     secrets:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -58,6 +58,77 @@ jobs:
 - ✅ Pre-configured dynamic run names
 - ✅ Built-in error handling
 - ✅ Consistent deployment patterns
+
+## 📁 Configuration File Organization
+
+### Current Organization (Recommended)
+**File:** [`.github/config/lambda-deploy-config.yml`](.github/config/lambda-deploy-config.yml)
+
+```
+project-root/
+├── .github/
+│   ├── config/
+│   │   └── lambda-deploy-config.yml      # ✅ Organized with other CI/CD configs
+│   └── workflows/
+│       ├── lambda-deploy.yml
+│       └── lambda-deploy-reusable.yml
+├── src/
+│   └── lambda_function.py
+├── pyproject.toml
+└── README.md
+```
+
+**Benefits:**
+- ✅ Keeps root directory clean
+- ✅ Groups CI/CD configurations together
+- ✅ Follows GitHub Actions conventions
+- ✅ Easy to find and maintain
+
+### Alternative Organizations
+
+#### Option 1: Root Directory (Simple Projects)
+```yaml
+# In workflows:
+config-file: "lambda-deploy-config.yml"
+```
+
+```
+project-root/
+├── lambda-deploy-config.yml              # Simple but clutters root
+├── lambda_function.py
+└── README.md
+```
+
+#### Option 2: Config Directory (Medium Projects)
+```yaml
+# In workflows:
+config-file: "config/lambda-deploy-config.yml"
+```
+
+```
+project-root/
+├── config/
+│   └── lambda-deploy-config.yml          # Dedicated config directory
+├── src/
+│   └── lambda_function.py
+└── README.md
+```
+
+#### Option 3: Deploy Directory (Large Projects)
+```yaml
+# In workflows:
+config-file: "deploy/lambda-config.yml"
+```
+
+```
+project-root/
+├── deploy/
+│   ├── lambda-config.yml                 # Deployment-specific directory
+│   ├── docker-config.yml
+│   └── k8s-config.yml
+├── src/
+└── README.md
+```
 
 ## 🔄 Testing Both Patterns
 
@@ -97,7 +168,7 @@ Both workflows trigger on:
 
 ## 🔧 Configuration
 
-Both workflows use the same configuration file: [`lambda-deploy-config.yml`](lambda-deploy-config.yml)
+Both workflows use the same configuration file: [`.github/config/lambda-deploy-config.yml`](.github/config/lambda-deploy-config.yml)
 
 ```yaml
 project:
@@ -171,17 +242,18 @@ Both workflows demonstrate dynamic run names that show deployment context:
 - [Configuration Examples](https://github.com/jfarcas/lambda-deploy-action/tree/main/actions/lambda-deploy/examples)
 
 ### This Consumer Repository
-- [lambda-deploy-config.yml](lambda-deploy-config.yml) - Configuration file
+- [lambda-deploy-config.yml](.github/config/lambda-deploy-config.yml) - Configuration file
 - [pyproject.toml](pyproject.toml) - Version detection
 - [lambda_function.py](lambda_function.py) - Sample Lambda function
 
 ## 🎯 Next Steps
 
 1. **Choose your pattern** based on your needs
-2. **Copy the workflow** that matches your requirements
-3. **Adapt the configuration** for your specific use case
-4. **Set up secrets and variables** in your repository
-5. **Test the deployment** in your dev environment
+2. **Choose your config organization** based on project size
+3. **Copy the workflow** that matches your requirements
+4. **Adapt the configuration** for your specific use case
+5. **Set up secrets and variables** in your repository
+6. **Test the deployment** in your dev environment
 
 ## 🤝 Contributing
 
