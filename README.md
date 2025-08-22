@@ -1,301 +1,182 @@
-# Lambda Test Python
+# Lambda Test Python - Consumer Example
 
-A simple Python Lambda function for testing deployment workflows with modern Python development practices.
+A sample Python Lambda function that demonstrates the usage of the [Lambda Deploy Action](https://github.com/jfarcas/lambda-deploy-action) from the GitHub Actions Collection.
 
-## 🚀 Features
+## 🎯 Purpose
 
-- **Modern Python Development:** Uses `pyproject.toml` for project configuration
-- **Version Management:** Semantic versioning with automatic detection
-- **Quality Gates:** Optional linting and testing with pytest
-- **Health Checks:** Deployment validation with configurable payloads
-- **Auto-Rollback:** Optional automatic rollback on deployment failure
+This repository serves as a **consumer example** to demonstrate how to use the Lambda Deploy Action in real-world scenarios. It showcases both usage patterns:
 
-## 📁 Project Structure
+1. **Direct Action Usage** - Maximum flexibility and control
+2. **Reusable Workflow Usage** - Simplified setup and standardized patterns
 
-```
-lambda-test-python/
-├── lambda_function.py                          # Main Lambda function
-├── pyproject.toml                             # Modern Python project configuration
-├── requirements.txt                           # Runtime dependencies (empty for this example)
-├── dev-requirements.txt                       # Development dependencies (alternative approach)
-├── tests/                                     # Test directory
-│   ├── __init__.py
-│   └── test_lambda_function.py               # Comprehensive test suite
-├── lambda-deploy-config.yml                  # Simple deployment configuration
-├── lambda-deploy-config-with-pyproject.yml   # Advanced configuration using pyproject.toml
-├── lambda-deploy-config-with-testing.yml     # Configuration with quality gates
-└── VERSION_MANAGEMENT_GUIDE.md               # Version management documentation
-```
+## 🚀 Quick Start
 
-## 🔧 Version Management
+### View the Demonstrations
+- **[Direct Action Workflow](.github/workflows/lambda-deploy.yml)** - Shows direct action usage
+- **[Reusable Workflow](.github/workflows/lambda-deploy-reusable.yml)** - Shows reusable workflow usage
+- **[Usage Examples](USAGE_EXAMPLES.md)** - Comprehensive comparison and guide
 
-This project demonstrates modern Python version management using `pyproject.toml`:
+### Test the Deployments
+1. Go to the **Actions** tab
+2. Choose either workflow:
+   - "Deploy Python Lambda (Direct Action)"
+   - "Deploy Python Lambda (Reusable Workflow)"
+3. Click "Run workflow" and select your environment
 
-```toml
-[project]
-name = "lambda-test-python"
-version = "1.0.0"  # ← Version automatically detected by deployment action
-description = "Simple Python Lambda function"
-```
+## 📋 What's Included
 
-### Version Detection Priority
+### Lambda Function
+- **[lambda_function.py](lambda_function.py)** - Simple Python Lambda function
+- **[requirements.txt](requirements.txt)** - Python dependencies
+- **[pyproject.toml](pyproject.toml)** - Project configuration with version
 
-The deployment action detects versions in this order:
-1. **pyproject.toml** (current approach) ✅
-2. `__version__.py`
-3. `setup.py`
-4. `version.txt`
-5. `VERSION`
-6. `package.json`
-7. Git tags
-8. Commit hash (fallback)
+### Configuration
+- **[lambda-deploy-config.yml](lambda-deploy-config.yml)** - Lambda Deploy Action configuration
+- **[version.txt](version.txt)** - Version file for deployment tracking
 
-## 🛡️ Quality Gates
+### Workflows
+- **Direct Action Usage** - Custom workflow with full control
+- **Reusable Workflow Usage** - Simplified workflow using pre-built patterns
 
-### Simple Approach (Current)
+### Documentation
+- **[USAGE_EXAMPLES.md](USAGE_EXAMPLES.md)** - Detailed usage guide and comparison
+- **[ENVIRONMENT_VARIABLES_SETUP.md](ENVIRONMENT_VARIABLES_SETUP.md)** - Setup guide
+
+## 🔧 Configuration Highlights
+
+### Multi-Environment Support
 ```yaml
-build:
-  commands:
-    install: "pip install -r requirements.txt"
-    build: "auto"
-    # No lint or test commands = skip both
+environments:
+  dev:
+    trigger_branches: ["main", "feature/**"]
+    aws:
+      auth_type: "access_key"
+  
+  pre:
+    trigger_branches: ["main"]
+    aws:
+      auth_type: "access_key"
+  
+  prod:
+    aws:
+      auth_type: "access_key"
 ```
 
-### With Quality Gates
+### Health Checks
 ```yaml
-build:
-  commands:
-    install: "pip install -e .[dev]"  # Install with dev dependencies
-    lint: "flake8 . && black --check . && isort --check-only ."
-    test: "python -m pytest tests/ -v --cov=lambda_function"
-    build: "auto"
-```
-
-## 🧪 Testing
-
-### Run Tests Locally
-
-```bash
-# Install development dependencies
-pip install -e .[dev]
-
-# Run all tests
-pytest
-
-# Run with coverage
-pytest --cov=lambda_function --cov-report=html
-
-# Run specific test types
-pytest -m unit          # Unit tests only
-pytest -m integration   # Integration tests only
-pytest -m "not slow"    # Skip slow tests
-```
-
-### Test Categories
-
-- **Unit Tests:** Fast, isolated tests of individual functions
-- **Integration Tests:** Tests that verify component interactions
-- **Performance Tests:** Tests that verify acceptable performance
-
-## 🔄 Deployment Configurations
-
-### 1. Simple Configuration (Current)
-**File:** `lambda-deploy-config.yml`
-- No quality gates
-- Manual rollback only
-- Basic health checks
-
-### 2. Modern Python Configuration
-**File:** `lambda-deploy-config-with-pyproject.yml`
-- Uses pyproject.toml for dependencies
-- Full quality gates (lint + test)
-- Development dependencies managed properly
-
-### 3. Quality Gates Configuration
-**File:** `lambda-deploy-config-with-testing.yml`
-- Shows how to install and use linting/testing tools
-- Demonstrates proper dependency management
-
-## 📋 Development Dependencies
-
-### Using pyproject.toml (Recommended)
-
-```toml
-[project.optional-dependencies]
-dev = [
-    "flake8>=5.0.0",      # Linting
-    "black>=22.0.0",      # Code formatting
-    "pytest>=7.0.0",      # Testing
-    "pytest-cov>=4.0.0", # Coverage
-]
-```
-
-Install with: `pip install -e .[dev]`
-
-### Using dev-requirements.txt (Alternative)
-
-```txt
-flake8>=5.0.0
-black>=22.0.0
-pytest>=7.0.0
-pytest-cov>=4.0.0
-```
-
-Install with: `pip install -r dev-requirements.txt`
-
-## 🚀 Local Development
-
-### Setup Development Environment
-
-```bash
-# Clone repository
-git clone <repository-url>
-cd lambda-test-python
-
-# Install in development mode with dev dependencies
-pip install -e .[dev]
-
-# Run quality checks
-flake8 .
-black --check .
-isort --check-only .
-
-# Run tests
-pytest -v
-
-# Test the Lambda function locally
-python -c "
-import lambda_function
-result = lambda_function.lambda_handler({'name': 'Local Test'}, None)
-print(result)
-"
-```
-
-### Code Quality Tools
-
-```bash
-# Format code
-black .
-isort .
-
-# Lint code
-flake8 .
-
-# Type checking (if enabled)
-mypy lambda_function.py
-
-# Security scanning (if enabled)
-bandit -r .
-```
-
-## 📊 Version Bumping
-
-### Manual Version Bumping
-
-```bash
-# Edit pyproject.toml
-vim pyproject.toml  # Change version = "1.0.0" to "1.0.1"
-
-# Commit and tag
-git add pyproject.toml
-git commit -m "Bump version to 1.0.1"
-git tag v1.0.1
-git push origin main --tags
-```
-
-### Automated Version Bumping (Optional)
-
-```bash
-# Install bump2version
-pip install bump2version
-
-# Bump patch version (1.0.0 → 1.0.1)
-bump2version patch
-
-# Bump minor version (1.0.1 → 1.1.0)
-bump2version minor
-
-# Bump major version (1.1.0 → 2.0.0)
-bump2version major
-```
-
-## 🏥 Health Check Testing
-
-The Lambda function responds to health check payloads:
-
-```python
-# Test payload
-{
-    "name": "HealthCheck",
-    "source": "deployment-validation"
-}
-
-# Expected response
-{
-    "statusCode": 200,
-    "body": {
-        "message": "Hello, HealthCheck!",
-        "timestamp": "2025-08-22T10:30:00",
-        "runtime": "Python 3.9",
-        "function_name": "lambda-test-python",
-        "request_id": "health-check-id"
-    }
-}
-```
-
-## 🔧 Configuration Examples
-
-### Minimal (Hello World)
-```yaml
-project:
-  name: "lambda-test-python"
-  runtime: "python"
-  versions:
-    python: "3.9"
-
-build:
-  commands:
-    install: "pip install -r requirements.txt"
-    build: "auto"
-```
-
-### Production Ready
-```yaml
-project:
-  name: "lambda-test-python"
-  runtime: "python"
-  versions:
-    python: "3.9"
-
-build:
-  commands:
-    install: "pip install -e .[dev]"
-    lint: "flake8 . && black --check ."
-    test: "pytest tests/ -v --cov=lambda_function"
-    build: "auto"
-
 deployment:
   health_check:
     enabled: true
-  auto_rollback:
-    enabled: true
-    strategy: "last_successful"
+    test_payload_object:
+      name: "Test"
+      source: "deployment-validation"
+    expected_status_code: 200
+    expected_response_contains: "success"
 ```
 
-## 📚 Documentation
+### Version Management
+- **Dev:** Timestamp-based deployments for rapid iteration
+- **Pre:** Version-based with overwrite warnings for staging flexibility
+- **Prod:** Strict version checking with conflict prevention
 
-- **[VERSION_MANAGEMENT_GUIDE.md](VERSION_MANAGEMENT_GUIDE.md)** - Comprehensive version management guide
-- **[lambda-deploy-config-with-pyproject.yml](lambda-deploy-config-with-pyproject.yml)** - Modern Python configuration
-- **[lambda-deploy-config-with-testing.yml](lambda-deploy-config-with-testing.yml)** - Quality gates configuration
+## 🎯 Usage Patterns Demonstrated
 
-## 🎯 Best Practices Demonstrated
+### Pattern 1: Direct Action Usage
+```yaml
+- name: Deploy Lambda Function
+  uses: jfarcas/lambda-deploy-action/actions/lambda-deploy@main
+  env:
+    S3_BUCKET_NAME: ${{ vars.S3_BUCKET_NAME }}
+    LAMBDA_FUNCTION_NAME: ${{ vars.LAMBDA_FUNCTION_NAME }}
+    AWS_REGION: ${{ vars.AWS_REGION }}
+  with:
+    config-file: 'lambda-deploy-config.yml'
+    environment: ${{ inputs.environment }}
+```
 
-1. **Modern Python Standards:** Using pyproject.toml for project configuration
-2. **Semantic Versioning:** Proper version management with automatic detection
-3. **Quality Gates:** Optional but comprehensive linting and testing
-4. **Test Organization:** Structured test suite with different test types
-5. **Development Dependencies:** Proper separation of runtime and dev dependencies
-6. **Configuration Flexibility:** Multiple deployment configuration examples
-7. **Documentation:** Comprehensive guides and examples
+### Pattern 2: Reusable Workflow Usage
+```yaml
+jobs:
+  deploy:
+    uses: jfarcas/lambda-deploy-action/actions/lambda-deploy/workflows/workflow.yml@main
+    with:
+      config-file: 'lambda-deploy-config.yml'
+      environment: ${{ inputs.environment }}
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      S3_BUCKET_NAME: ${{ vars.S3_BUCKET_NAME }}
+```
 
-This project serves as a reference implementation for modern Python Lambda development with enterprise-grade deployment workflows.
+## 🔍 Dynamic Workflow Names
+
+Both patterns demonstrate dynamic workflow names that provide rich context:
+
+- `🚀 Manual Deploy | john.doe → prod`
+- `📦 Auto Deploy | main`
+- `🔄 Lambda Deploy | feature/new-feature`
+
+## 📊 Comparison
+
+| Feature | Direct Action | Reusable Workflow |
+|---------|---------------|-------------------|
+| **Setup** | Medium complexity | Simple |
+| **Control** | Full control | Standardized |
+| **Customization** | High | Medium |
+| **Maintenance** | Self-managed | Action-managed |
+
+## 🔐 Required Setup
+
+### Repository Secrets
+- `AWS_ACCESS_KEY_ID`
+- `AWS_SECRET_ACCESS_KEY`
+- `AWS_ROLE_ARN` (optional)
+- `TEAMS_WEBHOOK_URL` (optional)
+
+### Repository Variables
+- `S3_BUCKET_NAME`
+- `LAMBDA_FUNCTION_NAME`
+- `AWS_REGION`
+
+## 📚 Learning Resources
+
+### Main Action Repository
+- [Lambda Deploy Action](https://github.com/jfarcas/lambda-deploy-action)
+- [Complete Documentation](https://github.com/jfarcas/lambda-deploy-action/tree/main/actions/lambda-deploy/docs)
+- [Configuration Examples](https://github.com/jfarcas/lambda-deploy-action/tree/main/actions/lambda-deploy/examples)
+
+### This Repository
+- [Usage Examples](USAGE_EXAMPLES.md) - Detailed comparison and guide
+- [Environment Setup](ENVIRONMENT_VARIABLES_SETUP.md) - Configuration guide
+
+## 🎯 For Your Own Projects
+
+1. **Choose your pattern** based on your needs:
+   - **Direct Action** for custom workflows
+   - **Reusable Workflow** for standard deployments
+
+2. **Copy the relevant workflow** from this repository
+
+3. **Adapt the configuration** for your specific requirements
+
+4. **Set up your secrets and variables**
+
+5. **Test in your dev environment**
+
+## 🤝 Contributing
+
+### To This Consumer Example
+- Open issues for example improvements
+- Submit PRs for better demonstrations
+- Request additional usage patterns
+
+### To the Main Action
+- Contribute to [jfarcas/lambda-deploy-action](https://github.com/jfarcas/lambda-deploy-action)
+- Follow the action's contributing guidelines
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+**This repository demonstrates real-world usage of the Lambda Deploy Action.** Use it as a reference for implementing the action in your own projects! 🚀

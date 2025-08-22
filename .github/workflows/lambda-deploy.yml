@@ -1,4 +1,4 @@
-name: Deploy Python Lambda
+name: Deploy Python Lambda (Direct Action)
 
 # Dynamic run name showing deployment details
 run-name: >-
@@ -74,7 +74,7 @@ jobs:
           echo "secrets.TEAMS_WEBHOOK_URL: '${{ secrets.TEAMS_WEBHOOK_URL && 'SET' || 'NOT_SET' }}'"
 
       - name: Deploy or Rollback Lambda Function
-        uses: jfarcas/lambda-deploy-action/.github/actions/lambda-deploy@main
+        uses: jfarcas/lambda-deploy-action/actions/lambda-deploy@main
         env:
           # Required repository variables (original working configuration)
           S3_BUCKET_NAME: ${{ vars.S3_BUCKET_NAME }}
@@ -98,11 +98,27 @@ jobs:
       - name: Deployment Summary
         if: success()
         run: |
+          echo "## 🚀 Deployment Summary (Direct Action)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Method:** Direct Action Usage" >> $GITHUB_STEP_SUMMARY
+          echo "- **Action:** \`jfarcas/lambda-deploy-action/actions/lambda-deploy@main\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Environment:** ${{ inputs.environment || 'auto' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Triggered by:** ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Event:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          
           if [[ -n "${{ inputs.rollback_version }}" ]]; then
-            echo "✅ Rollback completed successfully"
-            echo "🔄 Rolled back to version: ${{ inputs.rollback_version }}"
+            echo "- **Action:** Rollback to v${{ inputs.rollback_version }}" >> $GITHUB_STEP_SUMMARY
           else
-            echo "✅ Python Lambda deployment completed successfully"
+            echo "- **Action:** Normal deployment" >> $GITHUB_STEP_SUMMARY
           fi
-          echo "🐍 Runtime: Python 3.9"
-          echo "📦 Function: lambda-test-python"
+          
+          if [[ "${{ inputs.force_deploy }}" == "true" ]]; then
+            echo "- **Force Deploy:** Enabled" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Python Lambda deployment completed successfully using **Direct Action**" >> $GITHUB_STEP_SUMMARY
+          echo "🐍 Runtime: Python 3.9" >> $GITHUB_STEP_SUMMARY
+          echo "📦 Function: lambda-test-python" >> $GITHUB_STEP_SUMMARY

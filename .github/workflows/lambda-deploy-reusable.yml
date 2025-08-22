@@ -1,0 +1,99 @@
+name: Deploy Python Lambda (Reusable Workflow)
+
+on:
+  push:
+    branches:
+      - main
+      - 'feature/**'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - pre
+          - prod
+      force_deploy:
+        description: 'Force deployment'
+        required: false
+        default: false
+        type: boolean
+      rollback_version:
+        description: 'Version to rollback to (leave empty for normal deployment)'
+        required: false
+        type: string
+      debug:
+        description: 'Enable debug output'
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  deploy:
+    uses: jfarcas/lambda-deploy-action/actions/lambda-deploy/workflows/workflow.yml@main
+    with:
+      config-file: 'lambda-deploy-config.yml'
+      environment: ${{ inputs.environment || 'auto' }}
+      force-deploy: ${{ inputs.force_deploy || false }}
+      rollback-to-version: ${{ inputs.rollback_version }}
+      debug: ${{ inputs.debug || false }}
+    secrets:
+      # Required AWS credentials
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
+      
+      # Required repository variables passed as secrets
+      S3_BUCKET_NAME: ${{ vars.S3_BUCKET_NAME }}
+      LAMBDA_FUNCTION_NAME: ${{ vars.LAMBDA_FUNCTION_NAME }}
+      AWS_REGION: ${{ vars.AWS_REGION }}
+      
+      # Optional: Teams webhook for notifications
+      TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
+
+  post-deployment:
+    runs-on: ubuntu-latest
+    needs: deploy
+    if: always()
+    steps:
+      - name: Deployment Summary
+        run: |
+          echo "## 🚀 Deployment Summary (Reusable Workflow)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Method:** Reusable Workflow Usage" >> $GITHUB_STEP_SUMMARY
+          echo "- **Workflow:** \`jfarcas/lambda-deploy-action/actions/lambda-deploy/workflows/workflow.yml@main\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Environment:** ${{ inputs.environment || 'auto' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Triggered by:** ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Event:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Deployment Status:** ${{ needs.deploy.result }}" >> $GITHUB_STEP_SUMMARY
+          
+          if [[ -n "${{ inputs.rollback_version }}" ]]; then
+            echo "- **Action:** Rollback to v${{ inputs.rollback_version }}" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- **Action:** Normal deployment" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          if [[ "${{ inputs.force_deploy }}" == "true" ]]; then
+            echo "- **Force Deploy:** Enabled" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [[ "${{ needs.deploy.result }}" == "success" ]]; then
+            echo "✅ Python Lambda deployment completed successfully using **Reusable Workflow**" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Python Lambda deployment failed using **Reusable Workflow**" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "🐍 Runtime: Python 3.9" >> $GITHUB_STEP_SUMMARY
+          echo "📦 Function: lambda-test-python" >> $GITHUB_STEP_SUMMARY
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🎯 Reusable Workflow Benefits:" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Simplified workflow configuration" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Pre-configured dynamic run names" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Built-in error handling and logging" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Consistent deployment patterns" >> $GITHUB_STEP_SUMMARY
