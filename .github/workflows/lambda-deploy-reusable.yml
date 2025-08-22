@@ -43,7 +43,7 @@ jobs:
       contents: read
     with:
       config-file: '.github/config/lambda-deploy-config.yml'
-      environment: ${{ inputs.environment || 'auto' }}
+      environment: ${{ inputs.environment}}
       force-deploy: ${{ inputs.force_deploy || false }}
       rollback-to-version: ${{ inputs.rollback_version }}
       debug: ${{ inputs.debug || false }}
