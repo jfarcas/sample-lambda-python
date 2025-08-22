@@ -6,6 +6,9 @@ from datetime import datetime
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
+# Version information
+__version__ = "1.0.0"
+
 def lambda_handler(event, context):
     """
     Simple Lambda function that returns a hello world message
@@ -26,6 +29,7 @@ def lambda_handler(event, context):
             'message': f'Hello, {name}!',
             'timestamp': datetime.now().isoformat(),
             'runtime': 'Python 3.9',
+            'version': __version__,
             'function_name': context.function_name if context else 'lambda-test-python',
             'request_id': context.aws_request_id if context else 'local-test'
         })
