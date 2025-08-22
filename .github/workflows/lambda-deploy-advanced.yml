@@ -1,0 +1,123 @@
+name: Deploy Lambda Function (Advanced)
+
+on:
+  push:
+    branches: [main, feature/**]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        type: choice
+        options:
+          - dev
+          - pre
+          - prod
+        default: 'dev'
+      force-deploy:
+        description: 'Force deployment (bypass version conflicts)'
+        required: false
+        type: boolean
+        default: false
+      version:
+        description: 'Version to deploy (leave empty for auto-detection)'
+        required: false
+        type: string
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      # Get version for dynamic run name
+      - name: Get Version
+        id: get-version
+        run: |
+          # Try to get version from pyproject.toml
+          if [[ -f "pyproject.toml" ]]; then
+            VERSION=$(grep '^version = ' pyproject.toml | sed 's/version = "\(.*\)"/\1/' | head -1)
+          fi
+          
+          # Fallback to version.txt
+          if [[ -z "$VERSION" && -f "version.txt" ]]; then
+            VERSION=$(cat version.txt | tr -d '\n\r')
+          fi
+          
+          # Fallback to git tag
+          if [[ -z "$VERSION" ]]; then
+            VERSION=$(git describe --tags --abbrev=0 2>/dev/null | sed 's/^v//' || echo "unknown")
+          fi
+          
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "📋 Detected version: $VERSION"
+      
+      # Update run name with version and deployment info
+      - name: Update Run Name
+        run: |
+          VERSION="${{ steps.get-version.outputs.version }}"
+          ENV="${{ inputs.environment || 'auto' }}"
+          COMMIT_MSG="${{ github.event.head_commit.message }}"
+          BRANCH="${{ github.ref_name }}"
+          ACTOR="${{ github.actor }}"
+          
+          case "${{ github.event_name }}" in
+            "workflow_dispatch")
+              RUN_NAME="🚀 Manual Deploy | $ACTOR → $ENV | v$VERSION | $BRANCH"
+              ;;
+            "push")
+              RUN_NAME="📦 Push Deploy | v$VERSION | $BRANCH | ${COMMIT_MSG:0:50}..."
+              ;;
+            "pull_request")
+              RUN_NAME="🔍 PR Deploy | v$VERSION | PR #${{ github.event.number }} | ${{ github.event.pull_request.title }}"
+              ;;
+            *)
+              RUN_NAME="🔄 Lambda Deploy | v$VERSION | $BRANCH"
+              ;;
+          esac
+          
+          echo "🏷️ Run name: $RUN_NAME"
+          
+          # Note: GitHub doesn't allow updating run-name after workflow starts
+          # This is for logging purposes and future reference
+      
+      - name: Deploy Lambda
+        uses: jfarcas/lambda-deploy-action/.github/actions/lambda-deploy@main
+        with:
+          config-file: "lambda-deploy-config.yml"
+          environment: ${{ inputs.environment || 'auto' }}
+          force-deploy: ${{ inputs.force-deploy || false }}
+          version: ${{ inputs.version || '' }}
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          S3_BUCKET_NAME: ${{ vars.S3_BUCKET_NAME }}
+          LAMBDA_FUNCTION_NAME: ${{ vars.LAMBDA_FUNCTION_NAME }}
+          AWS_REGION: ${{ vars.AWS_REGION }}
+      
+      # Post-deployment summary
+      - name: Deployment Summary
+        if: always()
+        run: |
+          echo "## 🚀 Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Version:** ${{ steps.get-version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Environment:** ${{ inputs.environment || 'auto' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Triggered by:** ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Event:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "- **Force Deploy:** ${{ inputs.force-deploy }}" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          if [[ "${{ github.event_name }}" == "push" ]]; then
+            echo "- **Commit Message:** ${{ github.event.head_commit.message }}" >> $GITHUB_STEP_SUMMARY
+          fi
