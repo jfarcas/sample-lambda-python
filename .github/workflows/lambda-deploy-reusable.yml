@@ -48,12 +48,12 @@ jobs:
       rollback-to-version: ${{ inputs.rollback_version }}
       debug: ${{ inputs.debug || false }}
     secrets:
-      # Required AWS credentials
+      # Required AWS credentials (actual secrets)
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
       
-      # Required repository variables passed as secrets
+      # Repository variables (passed as secrets to reusable workflow)
       S3_BUCKET_NAME: ${{ vars.S3_BUCKET_NAME }}
       LAMBDA_FUNCTION_NAME: ${{ vars.LAMBDA_FUNCTION_NAME }}
       AWS_REGION: ${{ vars.AWS_REGION }}
