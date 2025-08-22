@@ -33,7 +33,7 @@ on:
 
 jobs:
   deploy:
-    uses: jfarcas/lambda-deploy-action/actions/lambda-deploy/workflows/workflow.yml@main
+    uses: jfarcas/lambda-deploy-action/.github/workflows/lambda-deploy-reusable.yml@main
     with:
       config-file: 'lambda-deploy-config.yml'
       environment: ${{ inputs.environment || 'auto' }}
@@ -64,7 +64,7 @@ jobs:
           echo "## 🚀 Deployment Summary (Reusable Workflow)" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "- **Method:** Reusable Workflow Usage" >> $GITHUB_STEP_SUMMARY
-          echo "- **Workflow:** \`jfarcas/lambda-deploy-action/actions/lambda-deploy/workflows/workflow.yml@main\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Workflow:** \`jfarcas/lambda-deploy-action/.github/workflows/lambda-deploy-reusable.yml@main\`" >> $GITHUB_STEP_SUMMARY
           echo "- **Environment:** ${{ inputs.environment || 'auto' }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY

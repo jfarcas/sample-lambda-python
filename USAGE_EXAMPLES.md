@@ -41,7 +41,7 @@ Uses the pre-built reusable workflow for simplified setup.
 ```yaml
 jobs:
   deploy:
-    uses: jfarcas/lambda-deploy-action/actions/lambda-deploy/workflows/workflow.yml@main
+    uses: jfarcas/lambda-deploy-action/.github/workflows/lambda-deploy-reusable.yml@main
     with:
       config-file: 'lambda-deploy-config.yml'
       environment: ${{ inputs.environment || 'auto' }}
