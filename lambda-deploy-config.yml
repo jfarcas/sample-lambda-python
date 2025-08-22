@@ -33,17 +33,18 @@ build:
 deployment:
   # Optional health check
   health_check:
-    # Enable health check to test the base64 encoding fix
+    # Enable health check
     enabled: true
     
-    # Simple JSON payload - avoid quotes within quotes
-    test_payload: '{"name":"Test","source":"deployment"}'
-    
-    # Alternative: YAML object format (cleaner approach)
+    # Use YAML object format (cleaner than JSON string)
     test_payload_object:
       name: "Test"
       source: "GitHub Actions"
       timestamp: "2025-08-22"
+      environment: "dev"
+    
+    # Alternative: JSON string format
+    # test_payload: '{"name":"Test","source":"deployment"}'
     
     # Optional: Expected response validation (not implemented yet)
     # expected_status_code: 200
