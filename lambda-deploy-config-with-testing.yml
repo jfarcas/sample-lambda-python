@@ -1,4 +1,5 @@
-# Lambda deployment configuration for lambda-test-python
+# Lambda deployment configuration WITH linting and testing
+# This example shows how to properly set up lint and test commands
 
 project:
   name: "lambda-test-python"
@@ -9,10 +10,16 @@ project:
 
 build:
   commands:
-    install: "pip install -r requirements.txt"
-    # lint: "flake8 ."                    # Optional: Uncomment and install flake8 if needed
-    # test: "python -m pytest tests/"    # Optional: Uncomment and install pytest if needed
-    build: "auto"    # automatic packaging
+    # Install both runtime and dev dependencies
+    install: "pip install -r requirements.txt && pip install flake8 pytest"
+    
+    # Lint command (requires flake8)
+    lint: "flake8 . --max-line-length=88 --ignore=E203,W503"
+    
+    # Test command (requires pytest)
+    test: "python -m pytest tests/ -v"
+    
+    build: "auto"
   
   # Artifact configuration
   artifact:
@@ -23,6 +30,7 @@ build:
       - "__pycache__/"
       - "*.pyc"
       - ".pytest_cache/"
+      - "tests/"
 
 environments:
   dev:
@@ -37,7 +45,6 @@ environments:
 
 # Deployment configuration
 deployment:
-  # Health check configuration
   health_check:
     enabled: true
     test_payload_object:
@@ -48,18 +55,11 @@ deployment:
     expected_status_code: 200
     expected_response_contains: "Hello, Test!"
 
-  # Auto-rollback configuration (choose your preference)
   auto_rollback:
-    # OPTION 1: Disabled (default) - Manual rollback only
     enabled: false
-    
-    # OPTION 2: Enabled - Automatic rollback on deployment failure
-    # enabled: true
-    # strategy: "last_successful"
-    # triggers:
-    #   on_deployment_failure: true
-    #   on_health_check_failure: false
-    # behavior:
-    #   max_attempts: 1
-    #   validate_rollback: true
-    #   fail_on_rollback_failure: true
+
+# NOTE: To use this configuration:
+# 1. Create a tests/ directory with test files
+# 2. Or use a dev-requirements.txt file:
+#    install: "pip install -r requirements.txt -r dev-requirements.txt"
+# 3. Or use pyproject.toml with dev dependencies
