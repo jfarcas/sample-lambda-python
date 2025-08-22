@@ -1,0 +1,19 @@
+name: Test Variables and Secrets
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Test Repository Variables and Secrets
+        run: |
+          echo "🔍 Testing repository variables and secrets..."
+          echo "S3_BUCKET_NAME: ${{ vars.S3_BUCKET_NAME }}"
+          echo "LAMBDA_FUNCTION_NAME: ${{ vars.LAMBDA_FUNCTION_NAME }}"
+          echo "AWS_REGION: ${{ vars.AWS_REGION }}"
+          echo "AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID && 'SET' || 'NOT SET' }}"
+          echo "AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY && 'SET' || 'NOT SET' }}"
+          echo "AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN && 'SET' || 'NOT SET' }}"
+          echo "TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL && 'SET' || 'NOT SET' }}"
