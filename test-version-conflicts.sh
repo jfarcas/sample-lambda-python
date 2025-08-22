@@ -1,18 +1,19 @@
 #!/bin/bash
 
 # Test script to demonstrate version conflict scenarios
-# This script simulates different version conflict situations
+# This script simulates different version conflict situations including pre environment
 
 set -e
 
-echo "🧪 Version Conflict Testing Script"
-echo "=================================="
+echo "🧪 Version Conflict Testing Script (Including Pre Environment)"
+echo "=============================================================="
 
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
+PURPLE='\033[0;35m'
 NC='\033[0m' # No Color
 
 # Function to print colored output
@@ -38,6 +39,7 @@ check_version_conflict() {
         return 0
     fi
     
+    # For all other environments (including pre), check version conflicts
     if [[ "$version_exists" == "true" ]]; then
         print_status $RED "❌ Version $version already exists in S3"
         print_status $RED "❌ Version conflict detected. Use force-deploy: true to override, or increment the version."
@@ -51,7 +53,7 @@ check_version_conflict() {
 }
 
 echo ""
-print_status $YELLOW "📋 Test Scenarios:"
+print_status $YELLOW "📋 Test Scenarios (Current Implementation):"
 echo ""
 
 # Test Case 1: Dev environment - version exists
@@ -59,76 +61,133 @@ echo "Test 1: Dev environment with existing version"
 check_version_conflict "dev" "1.0.0" "false" "true"
 echo ""
 
-# Test Case 2: Prod environment - version exists, no force
-echo "Test 2: Prod environment with existing version (no force deploy)"
+# Test Case 2: Pre environment - first deployment
+echo "Test 2: Pre environment with new version (first deployment)"
+check_version_conflict "pre" "1.0.0" "false" "false"
+echo ""
+
+# Test Case 3: Pre environment - version exists (PROBLEM CASE)
+echo "Test 3: Pre environment with existing version (staging retest scenario)"
+print_status $PURPLE "📝 Scenario: QA found bug, fixed code, want to redeploy to staging"
+check_version_conflict "pre" "1.0.0" "false" "true" || true
+print_status $YELLOW "⚠️  This blocks typical staging workflows!"
+echo ""
+
+# Test Case 4: Pre environment - version exists with force
+echo "Test 4: Pre environment with existing version (force deploy workaround)"
+print_status $PURPLE "📝 Scenario: Using force-deploy to bypass staging restrictions"
+check_version_conflict "pre" "1.0.0" "true" "true"
+print_status $YELLOW "⚠️  This works but bypasses all safety checks"
+echo ""
+
+# Test Case 5: Prod environment - version exists
+echo "Test 5: Prod environment with existing version (should be blocked)"
 check_version_conflict "prod" "1.0.0" "false" "true" || true
 echo ""
 
-# Test Case 3: Prod environment - version exists, with force
-echo "Test 3: Prod environment with existing version (force deploy enabled)"
-check_version_conflict "prod" "1.0.0" "true" "true"
-echo ""
-
-# Test Case 4: Prod environment - new version
-echo "Test 4: Prod environment with new version"
+# Test Case 6: Prod environment - new version
+echo "Test 6: Prod environment with new version"
 check_version_conflict "prod" "1.0.1" "false" "false"
 echo ""
 
-# Test Case 5: Staging environment - version exists
-echo "Test 5: Staging environment with existing version"
-check_version_conflict "staging" "1.0.0" "false" "true" || true
+print_status $YELLOW "📊 Current Behavior Summary:"
+echo ""
+echo "Environment | Version Exists | Force Deploy | Result | Notes"
+echo "------------|----------------|--------------|--------|-------"
+echo "dev         | Yes            | No           | ✅ Deploy | Always allows (good for dev)"
+echo "dev         | Yes            | Yes          | ✅ Deploy | Redundant but works"
+echo "pre         | No             | No           | ✅ Deploy | First deployment works"
+echo "pre         | Yes            | No           | ❌ BLOCKED | 🚨 PROBLEM: Blocks staging retests"
+echo "pre         | Yes            | Yes          | ✅ Deploy | Workaround but risky"
+echo "prod        | Yes            | No           | ❌ BLOCKED | Good: Prevents prod conflicts"
+echo "prod        | Yes            | Yes          | ✅ Deploy | Risky: Bypasses prod safety"
+echo "prod        | No             | No           | ✅ Deploy | Good: Normal prod deployment"
 echo ""
 
-print_status $YELLOW "📊 Summary of Behaviors:"
+print_status $RED "🚨 Pre Environment Problems:"
 echo ""
-echo "Environment | Version Exists | Force Deploy | Result"
-echo "------------|----------------|--------------|--------"
-echo "dev         | Yes            | No           | ✅ Deploy (overwrites)"
-echo "dev         | Yes            | Yes          | ✅ Deploy (overwrites)"
-echo "prod        | Yes            | No           | ❌ Fail (version conflict)"
-echo "prod        | Yes            | Yes          | ✅ Deploy (overwrites)"
-echo "prod        | No             | No           | ✅ Deploy (new version)"
-echo "staging     | Yes            | No           | ❌ Fail (version conflict)"
+echo "1. STAGING RETEST BLOCKED:"
+echo "   - Deploy v1.0.0 to pre for testing"
+echo "   - QA finds bug, developer fixes it"
+echo "   - Try to redeploy v1.0.0 to pre → BLOCKED"
+echo "   - Must use force-deploy or increment version"
 echo ""
-
-print_status $YELLOW "🚨 Risk Analysis:"
+echo "2. VERSION INFLATION:"
+echo "   - v1.0.0 → pre (testing)"
+echo "   - v1.0.1 → pre (bug fix)"
+echo "   - v1.0.2 → pre (another fix)"
+echo "   - v1.0.3 → prod (final version)"
+echo "   - Result: v1.0.0-1.0.2 never went to production"
 echo ""
-echo "HIGH RISK scenarios:"
-echo "- Prod deployment with force-deploy: true"
-echo "- Code changes without version increment"
-echo "- Multiple deployments with same version"
-echo ""
-echo "MEDIUM RISK scenarios:"
-echo "- Dev environment version overwrites"
-echo "- Staging deployments without proper versioning"
-echo ""
-echo "LOW RISK scenarios:"
-echo "- New version deployments"
-echo "- Proper version increment workflow"
+echo "3. WORKFLOW FRICTION:"
+echo "   - Staging should be flexible for testing"
+echo "   - Current: Same strict rules as production"
+echo "   - Forces workarounds (force-deploy)"
 echo ""
 
-print_status $YELLOW "💡 Recommendations:"
+print_status $GREEN "💡 Proposed Solutions:"
 echo ""
-echo "1. Always increment version for code changes"
-echo "2. Use force-deploy only for emergencies"
-echo "3. Implement pre-commit hooks to check version updates"
-echo "4. Use semantic versioning (major.minor.patch)"
-echo "5. Tag releases in Git for better tracking"
+echo "SOLUTION 1: Relaxed Pre Environment"
+echo "  - Allow version overwrites in pre/staging"
+echo "  - Show warnings but don't block"
+echo "  - Keep strict rules for production"
+echo ""
+echo "SOLUTION 2: Pre-Release Versioning"
+echo "  - Use: 1.0.0-rc.1, 1.0.0-pre.1, 1.0.0-staging.1"
+echo "  - Clear distinction between staging and prod versions"
+echo "  - Follows semantic versioning standards"
+echo ""
+echo "SOLUTION 3: Environment-Specific Policies"
+echo "  - dev: Always allow (current)"
+echo "  - pre: Allow with warnings"
+echo "  - prod: Strict version checking (current)"
 echo ""
 
-print_status $BLUE "🔧 Version Increment Examples:"
+print_status $BLUE "🔧 Recommended Pre Environment Logic:"
 echo ""
-echo "Current version: 1.0.0"
+echo 'if [[ "$ENV" == "pre" || "$ENV" == "staging" ]]; then'
+echo '  if version_exists; then'
+echo '    echo "::warning::Overwriting version $VERSION in staging"'
+echo '    echo "::notice::Consider using pre-release versions (1.0.0-rc.1)"'
+echo '  fi'
+echo '  can_deploy=true'
+echo 'fi'
 echo ""
-echo "Bug fix:       1.0.0 → 1.0.1  (patch)"
-echo "New feature:   1.0.1 → 1.1.0  (minor)"
-echo "Breaking:      1.1.0 → 2.0.0  (major)"
+
+print_status $YELLOW "🎯 Pre-Release Version Examples:"
 echo ""
-echo "Commands:"
-echo "  echo 'version = \"1.0.1\"' > pyproject.toml"
-echo "  # or use bump2version:"
-echo "  pip install bump2version"
-echo "  bump2version patch"
+echo "Release Candidates:"
+echo "  1.0.0-rc.1    # First release candidate"
+echo "  1.0.0-rc.2    # Second release candidate"
+echo "  1.0.0         # Final production release"
+echo ""
+echo "Pre-release versions:"
+echo "  1.0.0-pre.1   # Pre-release version 1"
+echo "  1.0.0-pre.2   # Pre-release version 2"
+echo "  1.0.0         # Final production release"
+echo ""
+echo "Staging versions:"
+echo "  1.0.0-staging.1  # Staging version 1"
+echo "  1.0.0-staging.2  # Staging version 2"
+echo "  1.0.0            # Final production release"
+echo ""
+
+print_status $PURPLE "📋 Typical Staging Workflow (Current vs Proposed):"
+echo ""
+echo "CURRENT (Problematic):"
+echo "1. Deploy v1.0.0 to pre → ✅ Success"
+echo "2. QA finds bug → Fix code"
+echo "3. Deploy v1.0.0 to pre → ❌ Version conflict"
+echo "4. Must use force-deploy → ⚠️ Risky workaround"
+echo ""
+echo "PROPOSED (Better):"
+echo "1. Deploy v1.0.0-rc.1 to pre → ✅ Success"
+echo "2. QA finds bug → Fix code"
+echo "3. Deploy v1.0.0-rc.2 to pre → ✅ Success"
+echo "4. Deploy v1.0.0 to prod → ✅ Success"
 echo ""
 
 print_status $GREEN "🎯 Test completed!"
+echo ""
+print_status $YELLOW "Key Takeaway: Pre environment currently has same strict rules as production,"
+print_status $YELLOW "which may be too restrictive for typical staging workflows."
