@@ -16,7 +16,7 @@ build:
     build: "auto"  # Will create zip automatically
   
   # Quality gates
-  lint_required: false    # Optional for this simple example
+  lint_required: true    # Optional for this simple example
   tests_required: true    # Ensure tests pass before deployment
   
   # Artifact configuration
@@ -31,24 +31,48 @@ build:
 
 # Deployment configuration
 deployment:
-  # Optional health check
+  # Optional health check with comprehensive response validation
   health_check:
     # Enable health check
     enabled: true
     
-    # Use YAML object format (cleaner than JSON string)
+    # Test payload options (choose one):
+    
+    # Option 1: YAML object format (recommended - cleaner, no JSON escaping)
     test_payload_object:
       name: "Test"
       source: "GitHub Actions"
       timestamp: "2025-08-22"
       environment: "dev"
     
-    # Alternative: JSON string format
+    # Option 2: JSON string format (alternative)
     # test_payload: '{"name":"Test","source":"deployment"}'
     
-    # Optional: Expected response validation (not implemented yet)
+    # Response validation options:
+    
+    # Expected HTTP status code (default: 200)
+    expected_status_code: 200
+    
+    # Text that should be present in the response (checks both raw response and parsed body)
+    expected_response_contains: "Hello, Test!"
+    
+    # Optional: Expected error message (for testing error scenarios)
+    # Use this when you expect the Lambda to return an error
+    # expected_error_message: "ValidationError"
+    
+    # Examples of different validation scenarios:
+    
+    # For successful responses:
     # expected_status_code: 200
-    # expected_response_contains: "Hello, Test!"
+    # expected_response_contains: "success"
+    
+    # For testing error handling:
+    # expected_status_code: 400
+    # expected_error_message: "Invalid input"
+    
+    # For API Gateway responses:
+    # expected_status_code: 200
+    # expected_response_contains: '"statusCode":200'
 
 environments:
   dev:
