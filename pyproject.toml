@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "lambda-test-python"
-version = "1.0.1"
+version = "1.0.2"
 description = "Simple Python Lambda function for testing deployment workflows"
 authors = [
     {name = "DevOps Team", email = "devops@company.com"}
