@@ -1,0 +1,58 @@
+name: Deploy Python Lambda (Env Vars)
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - pre
+          - prod
+      force_deploy:
+        description: 'Force deployment'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy Lambda Function
+        uses: jfarcas/lambda-deploy-action/.github/actions/lambda-deploy@main
+        env:
+          # Repository Variables (required)
+          S3_BUCKET_NAME: ${{ vars.S3_BUCKET_NAME }}
+          LAMBDA_FUNCTION_NAME: ${{ vars.LAMBDA_FUNCTION_NAME }}
+          AWS_REGION: ${{ vars.AWS_REGION || 'eu-west-1' }}
+          
+          # AWS Credentials for Access Key authentication
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          # AWS Credentials for OIDC authentication
+          AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
+          # Optional: Teams webhook for notifications
+          TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
+        with:
+          config-file: 'lambda-deploy-config.yml'
+          environment: ${{ inputs.environment || 'auto' }}
+          force-deploy: ${{ inputs.force_deploy || 'false' }}
+
+      - name: Test deployment
+        if: success()
+        run: |
+          echo "✅ Python Lambda deployment completed successfully"
+          echo "🐍 Runtime: Python 3.9"
+          echo "📦 Function: lambda-test-python"
