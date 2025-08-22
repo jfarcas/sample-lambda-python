@@ -34,6 +34,9 @@ deployment:
   # Optional health check
   health_check:
     test_payload: '{"name": "Test"}'
+    # Optional: Expected response validation (not implemented yet)
+    # expected_status_code: 200
+    # expected_response_contains: "Hello, Test!"
 
 environments:
   dev:
