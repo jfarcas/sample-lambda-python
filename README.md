@@ -4,23 +4,17 @@ A sample Python Lambda function that demonstrates the usage of the [Lambda Deplo
 
 ## 🎯 Purpose
 
-This repository serves as a **consumer example** to demonstrate how to use the Lambda Deploy Action in real-world scenarios. It showcases both usage patterns:
-
-1. **Direct Action Usage** - Maximum flexibility and control
-2. **Reusable Workflow Usage** - Simplified setup and standardized patterns
+This repository serves as a **consumer example** to demonstrate how to use the Lambda Deploy Action in real-world scenarios. It showcases the **direct action usage pattern** which provides maximum flexibility and control.
 
 ## 🚀 Quick Start
 
-### View the Demonstrations
+### View the Demonstration
 - **[Direct Action Workflow](.github/workflows/lambda-deploy.yml)** - Shows direct action usage
-- **[Reusable Workflow](.github/workflows/lambda-deploy-reusable.yml)** - Shows reusable workflow usage
-- **[Usage Examples](USAGE_EXAMPLES.md)** - Comprehensive comparison and guide
+- **[Usage Examples](USAGE_EXAMPLES.md)** - Comprehensive guide and best practices
 
-### Test the Deployments
+### Test the Deployment
 1. Go to the **Actions** tab
-2. Choose either workflow:
-   - "Deploy Python Lambda (Direct Action)"
-   - "Deploy Python Lambda (Reusable Workflow)"
+2. Choose "Deploy Python Lambda (Direct Action)"
 3. Click "Run workflow" and select your environment
 
 ## 📋 What's Included
@@ -34,12 +28,11 @@ This repository serves as a **consumer example** to demonstrate how to use the L
 - **[.github/config/lambda-deploy-config.yml](.github/config/lambda-deploy-config.yml)** - Lambda Deploy Action configuration
 - **[version.txt](version.txt)** - Version file for deployment tracking
 
-### Workflows
-- **Direct Action Usage** - Custom workflow with full control
-- **Reusable Workflow Usage** - Simplified workflow using pre-built patterns
+### Workflow
+- **Direct Action Usage** - Clean, flexible workflow with full control
 
 ### Documentation
-- **[USAGE_EXAMPLES.md](USAGE_EXAMPLES.md)** - Detailed usage guide and comparison
+- **[USAGE_EXAMPLES.md](USAGE_EXAMPLES.md)** - Detailed usage guide and best practices
 - **[ENVIRONMENT_VARIABLES_SETUP.md](ENVIRONMENT_VARIABLES_SETUP.md)** - Setup guide
 
 ## 📁 Project Organization
@@ -51,8 +44,7 @@ lambda-test-python/
 │   ├── config/
 │   │   └── lambda-deploy-config.yml      # ✅ CI/CD configuration
 │   └── workflows/
-│       ├── lambda-deploy.yml             # Direct action usage
-│       └── lambda-deploy-reusable.yml    # Reusable workflow usage
+│       └── lambda-deploy.yml             # Direct action usage
 ├── lambda_function.py                    # Lambda function code
 ├── requirements.txt                      # Python dependencies
 ├── pyproject.toml                        # Project configuration
@@ -65,7 +57,7 @@ lambda-test-python/
 - ✅ Clean root directory
 - ✅ CI/CD configurations grouped together
 - ✅ Easy to navigate and maintain
-- ✅ Follows GitHub Actions conventions
+- ✅ Simple and straightforward structure
 
 ## 🔧 Configuration Highlights
 
@@ -104,63 +96,67 @@ deployment:
 - **Pre:** Version-based with overwrite warnings for staging flexibility
 - **Prod:** Strict version checking with conflict prevention
 
-## 🎯 Usage Patterns Demonstrated
+## 🎯 Direct Action Usage Pattern
 
-### Pattern 1: Direct Action Usage
 ```yaml
 - name: Deploy Lambda Function
   uses: jfarcas/lambda-deploy-action/actions/lambda-deploy@main
   env:
+    AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+    AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
     S3_BUCKET_NAME: ${{ vars.S3_BUCKET_NAME }}
     LAMBDA_FUNCTION_NAME: ${{ vars.LAMBDA_FUNCTION_NAME }}
     AWS_REGION: ${{ vars.AWS_REGION }}
   with:
     config-file: '.github/config/lambda-deploy-config.yml'
     environment: ${{ inputs.environment }}
-```
-
-### Pattern 2: Reusable Workflow Usage
-```yaml
-jobs:
-  deploy:
-    uses: jfarcas/lambda-deploy-action/.github/workflows/lambda-deploy-reusable.yml@main
-    with:
-      config-file: '.github/config/lambda-deploy-config.yml'
-      environment: ${{ inputs.environment }}
-    secrets:
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      S3_BUCKET_NAME: ${{ vars.S3_BUCKET_NAME }}
+    force-deploy: ${{ inputs.force_deploy || false }}
+    rollback-to-version: ${{ inputs.rollback_version }}
+    debug: ${{ inputs.debug || false }}
 ```
 
 ## 🔍 Dynamic Workflow Names
 
-Both patterns demonstrate dynamic workflow names that provide rich context:
+The workflow demonstrates dynamic workflow names that provide rich context:
 
 - `🚀 Manual Deploy | john.doe → prod`
 - `📦 Auto Deploy | main`
 - `🔄 Lambda Deploy | feature/new-feature`
 
-## 📊 Comparison
+## 🎯 Why Direct Action Usage?
 
-| Feature | Direct Action | Reusable Workflow |
-|---------|---------------|-------------------|
-| **Setup** | Medium complexity | Simple |
-| **Control** | Full control | Standardized |
-| **Customization** | High | Medium |
-| **Maintenance** | Self-managed | Action-managed |
+### **Simplicity:**
+- ✅ Single action call - no complex workflow nesting
+- ✅ Direct control over all parameters
+- ✅ Easy to understand and debug
+
+### **Flexibility:**
+- ✅ Custom steps before/after deployment
+- ✅ Custom error handling and retry logic
+- ✅ Full control over workflow structure
+
+### **Reliability:**
+- ✅ No cross-repository dependencies
+- ✅ No permission inheritance issues
+- ✅ Straightforward troubleshooting
+
+### **Maintainability:**
+- ✅ Self-contained workflow
+- ✅ Easy to customize and extend
+- ✅ Clear action parameters and environment variables
 
 ## 🔐 Required Setup
 
 ### Repository Secrets
-- `AWS_ACCESS_KEY_ID`
-- `AWS_SECRET_ACCESS_KEY`
-- `AWS_ROLE_ARN` (optional)
-- `TEAMS_WEBHOOK_URL` (optional)
+- `AWS_ACCESS_KEY_ID` - AWS access key
+- `AWS_SECRET_ACCESS_KEY` - AWS secret key
+- `AWS_ROLE_ARN` - AWS role ARN (optional)
+- `TEAMS_WEBHOOK_URL` - Teams webhook URL (optional)
 
 ### Repository Variables
-- `S3_BUCKET_NAME`
-- `LAMBDA_FUNCTION_NAME`
-- `AWS_REGION`
+- `S3_BUCKET_NAME` - S3 bucket for deployment artifacts
+- `LAMBDA_FUNCTION_NAME` - Lambda function name
+- `AWS_REGION` - AWS region
 
 ## 📚 Learning Resources
 
@@ -170,27 +166,24 @@ Both patterns demonstrate dynamic workflow names that provide rich context:
 - [Configuration Examples](https://github.com/jfarcas/lambda-deploy-action/tree/main/actions/lambda-deploy/examples)
 
 ### This Repository
-- [Usage Examples](USAGE_EXAMPLES.md) - Detailed comparison and guide
+- [Usage Examples](USAGE_EXAMPLES.md) - Detailed guide and best practices
 - [Environment Setup](ENVIRONMENT_VARIABLES_SETUP.md) - Configuration guide
 
 ## 🎯 For Your Own Projects
 
-1. **Choose your pattern** based on your needs:
-   - **Direct Action** for custom workflows
-   - **Reusable Workflow** for standard deployments
+1. **Copy the workflow** from [`.github/workflows/lambda-deploy.yml`](.github/workflows/lambda-deploy.yml)
 
-2. **Choose your config organization**:
-   - **`.github/config/`** for organized projects (recommended)
-   - **Root directory** for simple projects
-   - **Custom directory** for specific needs
+2. **Copy the configuration** from [`.github/config/lambda-deploy-config.yml`](.github/config/lambda-deploy-config.yml)
 
-3. **Copy the relevant workflow** from this repository
+3. **Adapt for your needs:**
+   - Update project name and runtime version
+   - Configure environments and trigger branches
+   - Set up health checks and notifications
+   - Add custom build commands
 
-4. **Adapt the configuration** for your specific requirements
+4. **Set up your secrets and variables** in repository settings
 
-5. **Set up your secrets and variables**
-
-6. **Test in your dev environment**
+5. **Test in your dev environment** first
 
 ## 🤝 Contributing
 
@@ -209,4 +202,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**This repository demonstrates real-world usage of the Lambda Deploy Action.** Use it as a reference for implementing the action in your own projects! 🚀
+**This repository demonstrates real-world usage of the Lambda Deploy Action with the recommended direct action pattern.** Use it as a reference for implementing the action in your own projects! 🚀
