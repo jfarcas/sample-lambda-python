@@ -25,6 +25,7 @@ permissions:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment: ${{ inputs.environment || 'dev' }}  # Add this line to use environment-level secrets/variables
     
     steps:
       - name: Checkout code

@@ -2,14 +2,25 @@ name: Test Variables and Secrets
 
 on:
   workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to test'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - pre
+          - prod
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    environment: ${{ inputs.environment || 'dev' }}  # Use environment-level secrets/variables
     steps:
       - name: Test Repository Variables and Secrets
         run: |
-          echo "🔍 Testing repository variables and secrets..."
+          echo "🔍 Testing repository variables and secrets for environment: ${{ inputs.environment || 'dev' }}..."
           echo "S3_BUCKET_NAME: ${{ vars.S3_BUCKET_NAME }}"
           echo "LAMBDA_FUNCTION_NAME: ${{ vars.LAMBDA_FUNCTION_NAME }}"
           echo "AWS_REGION: ${{ vars.AWS_REGION }}"
