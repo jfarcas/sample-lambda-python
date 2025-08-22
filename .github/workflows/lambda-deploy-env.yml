@@ -1,4 +1,4 @@
-name: Deploy Python Lambda (Env Vars)
+name: Deploy Python Lambda (Environment Variables)
 
 on:
   workflow_dispatch:
@@ -25,7 +25,7 @@ permissions:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: ${{ inputs.environment || 'dev' }}  # Add this line to use environment-level secrets/variables
+    environment: ${{ inputs.environment || 'dev' }}
     
     steps:
       - name: Checkout code
@@ -34,16 +34,16 @@ jobs:
       - name: Deploy Lambda Function
         uses: jfarcas/lambda-deploy-action/.github/actions/lambda-deploy@main
         env:
-          # Repository Variables (required)
+          # Repository Variables (automatically available from environment)
           S3_BUCKET_NAME: ${{ vars.S3_BUCKET_NAME }}
           LAMBDA_FUNCTION_NAME: ${{ vars.LAMBDA_FUNCTION_NAME }}
           AWS_REGION: ${{ vars.AWS_REGION || 'eu-west-1' }}
           
-          # AWS Credentials for Access Key authentication
+          # AWS Credentials (automatically available from environment)
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          # AWS Credentials for OIDC authentication
           AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
+          
           # Optional: Teams webhook for notifications
           TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
         with:
