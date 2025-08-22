@@ -21,6 +21,10 @@ on:
         required: false
         default: false
         type: boolean
+      rollback_version:
+        description: 'Version to rollback to (leave empty for normal deployment)'
+        required: false
+        type: string
       debug:
         description: 'Enable debug output'
         required: false
@@ -52,7 +56,7 @@ jobs:
           echo "secrets.AWS_ROLE_ARN: '${{ secrets.AWS_ROLE_ARN && 'SET' || 'NOT_SET' }}'"
           echo "secrets.TEAMS_WEBHOOK_URL: '${{ secrets.TEAMS_WEBHOOK_URL && 'SET' || 'NOT_SET' }}'"
 
-      - name: Deploy Lambda Function
+      - name: Deploy or Rollback Lambda Function
         uses: jfarcas/lambda-deploy-action/.github/actions/lambda-deploy@main
         env:
           # Required repository variables
@@ -71,11 +75,17 @@ jobs:
           config-file: 'lambda-deploy-config.yml'
           environment: ${{ inputs.environment || 'auto' }}
           force-deploy: ${{ inputs.force_deploy || 'false' }}
+          rollback-to-version: ${{ inputs.rollback_version }}
           debug: ${{ inputs.debug || 'false' }}
 
-      - name: Test deployment
+      - name: Deployment Summary
         if: success()
         run: |
-          echo "✅ Python Lambda deployment completed successfully"
+          if [[ -n "${{ inputs.rollback_version }}" ]]; then
+            echo "✅ Rollback completed successfully"
+            echo "🔄 Rolled back to version: ${{ inputs.rollback_version }}"
+          else
+            echo "✅ Python Lambda deployment completed successfully"
+          fi
           echo "🐍 Runtime: Python 3.9"
           echo "📦 Function: lambda-test-python"
