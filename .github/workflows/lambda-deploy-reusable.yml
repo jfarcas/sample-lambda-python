@@ -31,9 +31,16 @@ on:
         default: false
         type: boolean
 
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   deploy:
     uses: jfarcas/lambda-deploy-action/.github/workflows/lambda-deploy-reusable.yml@main
+    permissions:
+      id-token: write
+      contents: read
     with:
       config-file: '.github/config/lambda-deploy-config.yml'
       environment: ${{ inputs.environment || 'auto' }}
