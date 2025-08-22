@@ -1,4 +1,4 @@
-name: Deploy Python Lambda (Direct Action)
+name: Deploy Lambda
 
 # Dynamic run name showing deployment details
 run-name: >-
