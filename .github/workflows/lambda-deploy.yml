@@ -21,6 +21,11 @@ on:
         required: false
         default: false
         type: boolean
+      debug:
+        description: 'Enable debug output'
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   id-token: write
@@ -35,7 +40,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Debug Environment Variables
+      - name: Debug Environment Variables (if enabled)
+        if: inputs.debug == true
         run: |
           echo "🐛 DEBUG: Variables and secrets available at job level:"
           echo "vars.S3_BUCKET_NAME: '${{ vars.S3_BUCKET_NAME }}'"
@@ -65,6 +71,7 @@ jobs:
           config-file: 'lambda-deploy-config.yml'
           environment: ${{ inputs.environment || 'auto' }}
           force-deploy: ${{ inputs.force_deploy || 'false' }}
+          debug: ${{ inputs.debug || 'false' }}
 
       - name: Test deployment
         if: success()
