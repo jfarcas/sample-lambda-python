@@ -1,18 +1,16 @@
-name: Deploy Lambda Function
+name: Deploy Python Lambda
 
 # Dynamic run name showing deployment details
 run-name: >-
   ${{
     github.event_name == 'workflow_dispatch' && 
-    format('🚀 Manual Deploy | {0} → {1} | v{2}', 
+    format('🚀 Manual Deploy | {0} → {1}', 
       github.actor,
-      github.ref_name,
-      '1.0.1'
+      inputs.environment
     ) ||
     github.event_name == 'push' &&
-    format('📦 Auto Deploy | {0} | {1}',
-      github.ref_name,
-      github.event.head_commit.message
+    format('📦 Auto Deploy | {0}',
+      github.ref_name
     ) ||
     format('🔄 Lambda Deploy | {0}',
       github.ref_name
@@ -21,50 +19,90 @@ run-name: >-
 
 on:
   push:
-    branches: [main, feature/**]
-  pull_request:
-    branches: [main]
+    branches:
+      - main
+      - 'feature/**'
   workflow_dispatch:
     inputs:
       environment:
-        description: 'Environment to deploy to'
+        description: 'Target environment'
         required: true
+        default: 'dev'
         type: choice
         options:
           - dev
           - pre
           - prod
-        default: 'dev'
-      force-deploy:
-        description: 'Force deployment (bypass version conflicts)'
+      force_deploy:
+        description: 'Force deployment'
         required: false
-        type: boolean
         default: false
-      version:
-        description: 'Version to deploy (leave empty for auto-detection)'
+        type: boolean
+      rollback_version:
+        description: 'Version to rollback to (leave empty for normal deployment)'
         required: false
         type: string
+      debug:
+        description: 'Enable debug output'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  id-token: write
+  contents: read
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    permissions:
-      id-token: write
-      contents: read
+    environment: ${{ inputs.environment || 'dev' }}
     
     steps:
-      - uses: actions/checkout@v4
-      
-      - name: Deploy Lambda
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Debug Environment Variables (if enabled)
+        if: inputs.debug == true
+        run: |
+          echo "🐛 DEBUG: Variables and secrets available at job level:"
+          echo "vars.S3_BUCKET_NAME: '${{ vars.S3_BUCKET_NAME }}'"
+          echo "vars.LAMBDA_FUNCTION_NAME: '${{ vars.LAMBDA_FUNCTION_NAME }}'"
+          echo "vars.AWS_REGION: '${{ vars.AWS_REGION }}'"
+          echo "secrets.AWS_ACCESS_KEY_ID: '${{ secrets.AWS_ACCESS_KEY_ID && 'SET' || 'NOT_SET' }}'"
+          echo "secrets.AWS_SECRET_ACCESS_KEY: '${{ secrets.AWS_SECRET_ACCESS_KEY && 'SET' || 'NOT_SET' }}'"
+          echo "secrets.AWS_ROLE_ARN: '${{ secrets.AWS_ROLE_ARN && 'SET' || 'NOT_SET' }}'"
+          echo "secrets.TEAMS_WEBHOOK_URL: '${{ secrets.TEAMS_WEBHOOK_URL && 'SET' || 'NOT_SET' }}'"
+
+      - name: Deploy or Rollback Lambda Function
         uses: jfarcas/lambda-deploy-action/.github/actions/lambda-deploy@main
-        with:
-          config-file: "lambda-deploy-config.yml"
-          environment: ${{ inputs.environment || 'auto' }}
-          force-deploy: ${{ inputs.force-deploy || false }}
-          version: ${{ inputs.version || '' }}
         env:
+          # Required repository variables (original working configuration)
+          S3_BUCKET_NAME: ${{ vars.S3_BUCKET_NAME }}
+          LAMBDA_FUNCTION_NAME: ${{ vars.LAMBDA_FUNCTION_NAME }}
+          AWS_REGION: ${{ vars.AWS_REGION || 'eu-west-1' }}
+          
+          # Required AWS credentials
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          S3_BUCKET_NAME: "lambda-deploy-action"
-          LAMBDA_FUNCTION_NAME: "lambda-deploy-python"
-          AWS_REGION: "eu-west-1"
+          AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
+          
+          # Optional: Teams webhook for notifications
+          TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
+        with:
+          config-file: 'lambda-deploy-config.yml'
+          environment: ${{ inputs.environment || 'auto' }}
+          force-deploy: ${{ inputs.force_deploy || 'false' }}
+          rollback-to-version: ${{ inputs.rollback_version }}
+          debug: ${{ inputs.debug || 'false' }}
+
+      - name: Deployment Summary
+        if: success()
+        run: |
+          if [[ -n "${{ inputs.rollback_version }}" ]]; then
+            echo "✅ Rollback completed successfully"
+            echo "🔄 Rolled back to version: ${{ inputs.rollback_version }}"
+          else
+            echo "✅ Python Lambda deployment completed successfully"
+          fi
+          echo "🐍 Runtime: Python 3.9"
+          echo "📦 Function: lambda-test-python"
