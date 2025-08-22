@@ -10,6 +10,7 @@ logger.setLevel(logging.INFO)
 __version__ = "1.0.0"
 
 def lambda_handler(event, context):
+
     """
     Simple Lambda function that returns a hello world message
     """
@@ -25,13 +26,13 @@ def lambda_handler(event, context):
             'Content-Type': 'application/json',
             'Access-Control-Allow-Origin': '*'
         },
-        'body': json.dumps({
-            'message': f'Hello, {name}!',
+            'body': json.dumps({
+                'message': f'Hello, {name}!',
             'timestamp': datetime.now().isoformat(),
             'runtime': 'Python 3.9',
             'version': __version__,
-            'function_name': context.function_name if context else 'lambda-test-python',
-            'request_id': context.aws_request_id if context else 'local-test'
+            'functionName': context.function_name if context else 'lambda-test-python',
+            'requestId': context.aws_request_id if context else 'local-test'
         })
     }
     
