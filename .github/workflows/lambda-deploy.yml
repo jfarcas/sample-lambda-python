@@ -74,7 +74,7 @@ jobs:
           echo "secrets.TEAMS_WEBHOOK_URL: '${{ secrets.TEAMS_WEBHOOK_URL && 'SET' || 'NOT_SET' }}'"
 
       - name: Deploy or Rollback Lambda Function
-        uses: jfarcas/lambda-deploy-action/actions/lambda-deploy@lambda-deploy-v2.0.0
+#        uses: jfarcas/lambda-deploy-action/actions/lambda-deploy@lambda-deploy-v2.0.0
         uses: jfarcas/lambda-deploy-action/actions/lambda-deploy@main
         env:
           # Required repository variables (original working configuration)
