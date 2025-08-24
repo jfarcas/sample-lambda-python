@@ -75,6 +75,7 @@ jobs:
 
       - name: Deploy or Rollback Lambda Function
         uses: jfarcas/lambda-deploy-action/actions/lambda-deploy@lambda-deploy-v2.0.0
+        uses: jfarcas/lambda-deploy-action/actions/lambda-deploy@main
         env:
           # Required repository variables (original working configuration)
           S3_BUCKET_NAME: ${{ vars.S3_BUCKET_NAME }}
