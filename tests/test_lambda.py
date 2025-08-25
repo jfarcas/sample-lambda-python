@@ -18,7 +18,7 @@ class TestLambdaFunction(unittest.TestCase):
         self.assertEqual(response["statusCode"], 200)
 
         body = json.loads(response["body"])
-        self.assertIn("Hello, World!", body["message"])
+        self.assertEqual(body["message"], "Hello, World!")
 
     def test_hello_world_with_name(self):
         """Test lambda function with custom name"""
@@ -32,7 +32,7 @@ class TestLambdaFunction(unittest.TestCase):
         self.assertEqual(response["statusCode"], 200)
 
         body = json.loads(response["body"])
-        self.assertIn("Hello, Alice!", body["message"])
+        self.assertEqual(body["message"], "Hello, Alice!")
 
     def test_response_structure(self):
         """Test response has correct structure"""
@@ -47,6 +47,8 @@ class TestLambdaFunction(unittest.TestCase):
 
         body = json.loads(response["body"])
         self.assertIn("message", body)
+        self.assertIn("timestamp", body)
+        self.assertIn("version", body)
 
 
 if __name__ == "__main__":
