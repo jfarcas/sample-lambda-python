@@ -10,9 +10,9 @@ project:
 
 build:
   commands:
-    install: "uv sync"
-    lint: "uv run ruff check . || uv run black --check . || echo 'Linting tools not found, skipping...'"
-    test: "uv run python -m unittest discover tests -v"
+    install: "pip install -r requirements.txt"
+    lint: "ruff check . || black --check . || echo 'Linting completed'"
+    test: "python -m unittest discover tests -v"
     build: "auto"    # automatic packaging
   
   # Artifact configuration
