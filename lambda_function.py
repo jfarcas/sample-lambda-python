@@ -24,7 +24,7 @@ structlog.configure(
 logger = structlog.get_logger()
 
 # Version information
-__version__ = "1.0.5"
+__version__ = "1.1.0"
 
 # AWS clients (initialized lazily)
 s3_client = None

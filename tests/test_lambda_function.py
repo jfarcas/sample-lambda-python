@@ -36,7 +36,7 @@ class TestLambdaFunction(unittest.TestCase):
         self.assertEqual(body["message"], "Hello, World!")
         self.assertEqual(body["function_name"], "lambda-test-python")
         self.assertEqual(body["request_id"], "test-request-id")
-        self.assertEqual(body["runtime"], "Python 3.9")
+        self.assertTrue(body["system"]["python_version"].startswith("Python"))
 
     def test_lambda_handler_without_name(self):
         """Test Lambda handler without a name in the event (default)."""
@@ -97,13 +97,22 @@ class TestLambdaFunction(unittest.TestCase):
         body = json.loads(response["body"])
         required_fields = [
             "message",
-            "timestamp",
-            "runtime",
+            "system",
             "function_name",
             "request_id",
+            "version",
         ]
         for field in required_fields:
             self.assertIn(field, body)
+            
+        # Check system subfields
+        system_fields = [
+            "timestamp_utc",
+            "python_version",
+            "aws_region",
+        ]
+        for field in system_fields:
+            self.assertIn(field, body["system"])
 
     def test_lambda_handler_with_none_context(self):
         """Test Lambda handler with None context (local testing scenario)."""
@@ -119,7 +128,7 @@ class TestLambdaFunction(unittest.TestCase):
         body = json.loads(response["body"])
         self.assertEqual(body["message"], "Hello, Local Test!")
         self.assertEqual(body["function_name"], "lambda-test-python")  # Default value
-        self.assertEqual(body["request_id"], "local-test")  # Default value
+        # Note: request_id is now generated as UUID when context is None
 
     def test_lambda_handler_with_various_names(self):
         """Test Lambda handler with various name inputs."""
@@ -166,7 +175,8 @@ class TestLambdaIntegration(unittest.TestCase):
 
         self.assertEqual(response["statusCode"], 200)
         body = json.loads(response["body"])
-        self.assertIn("timestamp", body)
+        self.assertIn("system", body)
+        self.assertIn("timestamp_utc", body["system"])
         self.assertEqual(body["message"], "Hello, Integration Test!")
 
 
