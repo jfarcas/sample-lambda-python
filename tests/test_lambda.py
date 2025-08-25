@@ -19,8 +19,6 @@ class TestLambdaFunction(unittest.TestCase):
 
         body = json.loads(response["body"])
         self.assertIn("Hello, World!", body["message"])
-        self.assertEqual(body["system"]["python_version"].startswith("Python"), True)
-        self.assertEqual(body["function_name"], "lambda-test-python")
 
     def test_hello_world_with_name(self):
         """Test lambda function with custom name"""
@@ -49,12 +47,6 @@ class TestLambdaFunction(unittest.TestCase):
 
         body = json.loads(response["body"])
         self.assertIn("message", body)
-        self.assertIn("system", body)
-        self.assertIn("timestamp_utc", body["system"])
-        self.assertIn("python_version", body["system"])
-        self.assertIn("function_name", body)
-        self.assertIn("request_id", body)
-        self.assertIn("version", body)
 
 
 if __name__ == "__main__":

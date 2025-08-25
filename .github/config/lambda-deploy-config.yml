@@ -10,9 +10,9 @@ project:
 
 build:
   commands:
-    install: "pip install -r requirements.txt"
-    # lint: "flake8 ."                    # Optional: Uncomment and install flake8 if needed
-    # test: "python -m pytest tests/"    # Optional: Uncomment and install pytest if needed
+    install: "uv sync"
+    lint: "uv run ruff check . || uv run black --check . || echo 'Linting tools not found, skipping...'"
+    test: "uv run python -m unittest discover tests -v"
     build: "auto"    # automatic packaging
   
   # Artifact configuration

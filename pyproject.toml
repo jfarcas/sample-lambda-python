@@ -57,6 +57,7 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     # Linting tools
+    "ruff>=0.1.0",     # Fast Python linter
     "flake8>=5.0.0",
     "black>=22.0.0",
     "isort>=5.0.0",
@@ -185,4 +186,9 @@ exclude_lines = [
     "if __name__ == .__main__.:",
     "class .*\\bProtocol\\):",
     "@(abc\\.)?abstractmethod",
+]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.12.10",
 ]
